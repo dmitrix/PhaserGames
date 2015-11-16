@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SuperFunSpace</title>
+
+    <!-- Following a Project Template -->
+
+    <script type="text/javascript" src = "lib/phaser.js">
+    </script>
+
+    <script type="text/javascript" src="src/Boot.js">
+    </script>
+    <script type="text/javascript" src="src/Preloader.js">
+    </script>
+    <script type="text/javascript" src="src/states/MainMenu.js">
+    </script>
+    <!--<script type="text/javascript" src="src/states/Game.js">
+    </script>-->
+
+  </head>
+
+  <body style="background-color:#7ADBFF">
+    <div id="gameContainer"></div>
+
+    <script type="text/javascript">
+      window.onload = function() {
+
+        // Create Phaser game object
+        var game = new Phaser.Game(1024, 640, Phaser.AUTO, 'gameContainer');
+
+        // Add states
+        game.state.add('Boot', SuperFunSpace.Boot);
+        game.state.add('Preloader', SuperFunSpace.Preloader);
+        game.state.add('MainMenu', SuperFunSpace.MainMenu);
+        //game.state.add('Game', SuperFunSpace.Game);
+
+        // Time to Boot!
+        game.state.start('Boot');
+
+      };
+    </script>
+  </body>
+</html>
