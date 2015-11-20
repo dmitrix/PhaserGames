@@ -9,9 +9,13 @@ SuperFunSpace.MainMenu.prototype = {
 
   // Prepreloaded
 
+
+
   create: function(){
     this.add.sprite(0, 0, 'background');
     this.add.text( 20, 20, 'SuperFunSpace!');
+
+    startButton = this.add.button(300, 200, 'start', function(){console.log("woo")}, this);
   },
 
   update: function(){

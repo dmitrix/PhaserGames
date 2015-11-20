@@ -13,6 +13,7 @@ SuperFunSpace.Preloader.prototype = {
     // preloads within preloads. So meta!
 
     this.load.image('background', 'res/background.png');
+    this.load.image('start', 'res/start.png');
   },
 
   create: function () {
