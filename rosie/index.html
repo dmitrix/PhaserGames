@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Rosie</title>
+
+    <!-- Include CSS -->
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <!-- Include Scripts -->
+    <script type="text/javascript" src="lib/phaser.js">
+    </script>
+
+    <script type="text/javscript" src="src/Boot.js">
+    </script>
+
+    <script type="text/javascript" src="src/Preloader.js">
+    </script>
+
+    <script type="text/javascript" src="src/MainMenu.js">
+    </script>
+
+    <script type="text/javascript" src="src/Game.js">
+    </script>
+
+  </head>
+
+  <body>
+  <div id="gameContainer"></div>
+
+  <p>Work in Progress</p>
+
+  <script type="text/javascript">
+    window.onload = function() {
+
+      var game = new Phaser.Game(640, 640); // Everything happens in this small square window
+
+      // states
+      game.state.add('Boot', Rosie.boot);
+      game.state.add('Preloader', Rosie.Preloader);
+      game.state.add('MainMenu');
+      game.state.add('Game');
+
+      // Boot up
+      game.state.start('Boot');
+
+    };
+
+
+  </body>
+
+</html>
