@@ -38,8 +38,8 @@
       // states
       game.state.add('Boot', Rosie.boot);
       game.state.add('Preloader', Rosie.Preloader);
-      game.state.add('MainMenu');
-      game.state.add('Game');
+      game.state.add('MainMenu', Rosie.MainMenu);
+      game.state.add('Game', Rosie.Game);
 
       // Boot up
       game.state.start('Boot');
