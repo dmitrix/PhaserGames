@@ -13,12 +13,25 @@ var ball;
 var paddle;
 var tiles;
 var livesText;
-var introText;
+var introText = "Press Space to Begin!";
 var background;
+var cursors;
+var text;
+
+var dead = false;
+
+var bounce;
+var explosion;
 
 var ballOnPaddle = true;
 var lives = 3;
 var score = 0;
+
+var heartEmitter;
+
+var heart0, heart1, heart2;
+
+var scoreText = "0";
 
 var defaultTextOptions = {
   font: "20px Arial",
@@ -42,11 +55,24 @@ function phaserPreload(){
   game.load.image("tile4", "assets/tile4.png");
   game.load.image("tile5", "assets/tile5.png");
 
+  game.load.image("particle0", "assets/particle0.png");
+  //game.load.image("particle1", "assets/particle1.png");
+
+  game.load.image("hearticle", "assets/hearticle.png");
+
+  game.load.image("heart", "assets/heart.png");
+
   game.load.image("paddle", "assets/paddle.png");
   game.load.image("ball", "assets/ball.png");
+
+
+  game.load.audio('bounce', ['assets/audio/bouncer.ogg']);
+  game.load.audio('explosion', ['assets/audio/explode.ogg']);
 }
 
 function phaserCreate(){
+
+
   // Use arcade style physics no collision on bottom of screen
   game.physics.startSystem(Phaser.Physics.ARCADE);
   game.physics.arcade.checkCollision.down = false;
@@ -80,9 +106,84 @@ function phaserCreate(){
   ball.body.collideWorldBounds = true;
   ball.body.bounce.set(1);
   ball.events.onOutOfBounds.add(helpers.death, this);
+
+  text = game.add.text(game.world.width-10, 5, scoreText);
+  text.anchor.set(1,0);
+  text.align = 'center';
+
+  text.font = 'Arial';
+  text.fontWeight = 'bold';
+  text.fontSize = 24;
+  text.fill = '#FFFFFF';
+
+  heart0 = game.add.sprite(10,10,'heart');
+  heart1 = game.add.sprite(32,10,'heart');
+  heart2 = game.add.sprite(54,10,'heart');
+
+  introText = game.add.text(game.world.centerX-10, game.world.centerY+20, introText);
+  introText.anchor.set(0.5,0.5);
+  introText.align = 'center';
+
+  introText.font = 'Arial';
+  introText.fontWeight = 'bold';
+  introText.fontSize = 52;
+  introText.fill = '#FFFFFF';
+
+  /*
+      Particle fun
+  */
+  emitter = game.add.emitter(0,0,100);
+  emitter.makeParticles('particle0');
+  emitter.gravity = 200;
+
+  /*heartEmitter = game.add.emitter(0,0,100);
+  heartEmitter.makeParticle('hearticle');
+  heartEmitter.gravity = 200; // I'm so lazy .__.*/
+
+  bounce = game.add.audio('bounce');
+  explosion = game.add.audio('explosion');
+
+
+  cursors = this.input.keyboard.createCursorKeys();
+  release = this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
 }
 
 function phaserUpdate(){
+
+
+
+
+  if (dead && release.isDown)
+    reset();
+
+
+  if(release.isDown && ballOnPaddle && !dead )
+  {
+    helpers.release();
+  }
+
+
+
+  /*
+    Paddle motion + acceleration! :D
+  */
+  if (paddle.body.velocity.x > 0)
+    paddle.body.velocity.x-=50;
+  else if (paddle.body.velocity.x < 0)
+    paddle.body.velocity.x+=50;
+  else
+    paddle.body.velocity.x=0;
+
+  if (cursors.left.isDown)
+  {
+      paddle.body.velocity.x = -400;
+  }
+  else if (cursors.right.isDown)
+  {
+      paddle.body.velocity.x = 400;
+  }
+
+
 
   if (paddle.x < 24){
     paddle.x = 24;
@@ -96,6 +197,39 @@ function phaserUpdate(){
     game.physics.arcade.collide(ball, paddle, helpers.ballCollideWithPaddle, null, this);
     game.physics.arcade.collide(ball, tiles, helpers.ballCollideWithTiles, null, this);
   }
+
+
+}
+
+function particleBurst(x, y){
+  emitter.x = x;
+  emitter.y = y;
+
+  explosion.play();
+
+  emitter.start(true, 2000, null, 20);
+}
+
+function reset()
+{
+  dead = false;
+  lives = 3;
+  score = 0;
+
+  ballOnPaddle = true;
+
+  text.setText(score);
+
+  ball.body.velocity.set(0);
+  ball.x = paddle.x + 16;
+  ball.y = paddle.y - 16;
+
+  tiles.callAll("revive");
+  heart0.visible = true;
+  heart1.visible = true;
+  heart2.visible = true;
+
+
 }
 
 var helpers = {
@@ -111,9 +245,23 @@ var helpers = {
 
   death: function() {
     lives--;
-    livesText.text = "lives: " + lives;
+    explosion.play();
+
+    // AWFUL implementation, please fix
+    if (lives === 2)
+    {
+        heart2.visible = false;
+        particleBurst(64,20);
+    }
+    else if (lives == 1)
+    {
+        heart1.visible = false;
+        particleBurst(42,20);
+    }
 
     if (lives === 0) {
+      heart0.visible = false;
+      particleBurst(20,20);
       helpers.gameOver();
     } else {
       ballOnPaddle = true;
@@ -125,30 +273,33 @@ var helpers = {
     ball.body.velocity.setTo(0, 0);
     introText.text = "Game Over!";
     introText.visible = true;
+
+    dead = true;
   },
 
-  ballCollideWithTile: function(ball, tile){
+  ballCollideWithTiles: function(ball, tile){
     tile.kill();
 
+    particleBurst(tile.body.x + 16, tile.body.y + 8);
+
+
     score += 10;
-    scoreText = "score: " + score;
+    //scoreText = "score: " + score;
+
+    text.setText(score);
 
     if (tiles.countLiving() <= 0){
       score += 1000;
-      scoreText.text = "score: " + score;
-      introText.text = "- Next Level -";
+      introText.text = "You Win!";
 
-      ballOnPaddle = true;
-      ball.body.velocity.set(0);
-      ball.x = paddle.x + 16;
-      ball.y = paddle.y - 16;
-
-      tiles.callAll("revive");
+      dead = true;
     }
   },
 
   ballCollideWithPaddle: function(ball, paddle){
     var diff = 0;
+
+    bounce.play();
 
     if (ball.x < paddle.x){
       diff = paddle.x - ball.x;
